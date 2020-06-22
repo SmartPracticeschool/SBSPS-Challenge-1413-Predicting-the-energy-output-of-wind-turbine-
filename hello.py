@@ -3,7 +3,8 @@ from flask import Flask, render_template, request, jsonify
 import atexit
 import os
 import json
-
+from mlHelperFuncts import transform, inverse
+from mlPredictorWatson import predictPower as power_pred
 app = Flask(__name__, static_url_path='')
 
 db_name = 'mydb'
@@ -40,7 +41,7 @@ port = int(os.getenv('PORT', 8000))
 
 @app.route('/')
 def root():
-    return 'I am the seanate'
+    return render_template('index.html')
 
 # /* Endpoint to greet and add a new visitor to database.
 # * Send a POST request to localhost:8000/api/visitors with body
@@ -78,6 +79,17 @@ def put_visitor():
     else:
         print('No database')
         return jsonify(data)
+
+
+# @app.route('/get_started')
+# def get_started():
+    
+
+
+@app.route('/test/<ws>/<wd>')
+def test(ws, wd):
+    return str(power_pred(int(ws), int(wd)))
+
 
 @atexit.register
 def shutdown():

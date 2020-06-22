@@ -63,3 +63,5 @@ target/
 *.DS_Store
 
 vcap-local.json
+
+generate_iam_token.txt
