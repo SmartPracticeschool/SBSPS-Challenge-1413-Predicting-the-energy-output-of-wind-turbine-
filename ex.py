@@ -1,0 +1,13 @@
+import requests
+
+iam_token = "eyJraWQiOiIyMDIwMDUyNTE4MzAiLCJhbGciOiJSUzI1NiJ9.eyJpYW1faWQiOiJpYW0tU2VydmljZUlkLTVkMGViNTM1LWY3MzgtNDQwYi04ODA4LTlmNzMzZWMxZGJjNCIsImlkIjoiaWFtLVNlcnZpY2VJZC01ZDBlYjUzNS1mNzM4LTQ0MGItODgwOC05ZjczM2VjMWRiYzQiLCJyZWFsbWlkIjoiaWFtIiwiaWRlbnRpZmllciI6IlNlcnZpY2VJZC01ZDBlYjUzNS1mNzM4LTQ0MGItODgwOC05ZjczM2VjMWRiYzQiLCJuYW1lIjoid2RwLXdyaXRlciIsInN1YiI6IlNlcnZpY2VJZC01ZDBlYjUzNS1mNzM4LTQ0MGItODgwOC05ZjczM2VjMWRiYzQiLCJzdWJfdHlwZSI6IlNlcnZpY2VJZCIsImFjY291bnQiOnsidmFsaWQiOnRydWUsImJzcyI6IjQ3NmFhMGQ2NDc4NjQ1NDU5ODA0NTI1ZmJjY2YwNmQ0In0sImlhdCI6MTU5MzA2NzQ0MSwiZXhwIjoxNTkzMDcxMDQxLCJpc3MiOiJodHRwczovL2lhbS5ibHVlbWl4Lm5ldC9pZGVudGl0eSIsImdyYW50X3R5cGUiOiJ1cm46aWJtOnBhcmFtczpvYXV0aDpncmFudC10eXBlOmFwaWtleSIsInNjb3BlIjoiaWJtIG9wZW5pZCIsImNsaWVudF9pZCI6ImJ4IiwiYWNyIjoxLCJhbXIiOlsicHdkIl19.WbO4h0C6UxQbwbvc6oArLtgkClL_zaIltaXUw18ErDRNWDPiPa-Fp6DhUddKKj4FxXR4tx7nw5GO1zRXOfXGD3cbM9Lk0kLr76sMabqAHQt90oSuGkIMvWqSHy0_8kesF_fCKtWSiBCBsM9aXCLumLFOfvnyGSiNO1C6gLa2rclNKobFsd148rWL3pRVM6dBWA1w-EWxIxNEc7ItxUt7TSqFMCOdxeiY39i_9i6Hox1nW1lSv-IN1NafaMtV_J2id9wdJYtsVEUNpJMgrjqyBRgXSR-wYRSg19tnV47dk8g7TJTO1cmmI9NpologRXOPlEsWDSm4INV8Sx507WnvUw"
+ml_instance_id = "6e725e72-d102-42dd-8647-3357992c6fda"
+
+header = {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + iam_token, 'ML-Instance-ID': ml_instance_id}
+x = [1,2]
+# NOTE: manually define and pass the array(s) of values to be scored in the next line
+payload_scoring = {"input_data": [{"fields": ["speed ", "direction"], "values": [x,x]}]}
+# try:
+response_scoring = requests.post('https://us-south.ml.cloud.ibm.com/v4/deployments/44802140-211f-4386-9207-799f5ceddc7c/predictions', json=payload_scoring, headers=header)
+# return (response_scoring.json())
+print(response_scoring.json())

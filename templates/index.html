@@ -1,17 +1,78 @@
 {% extends 'layout.html' %}
+{% block header %}
 
+<style>
+
+#pic1 {
+  height: 600px;
+
+  /* Center and scale the image nicely */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}`
+
+#pic2 {
+  height: 600px;
+
+  /* Center and scale the image nicely */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+</style>
+{% endblock %}
 {% block content %}	
-<div class="jumbotron card card-image" style="background-image: url(https://mdbootstrap.com/img/Photos/Others/gradient1.jpg);">
-  <div class="text-white text-center py-5 px-4">
-    <div>
-      <h2 class="card-title h1-responsive pt-3 mb-5 font-bold"><strong>Wind 🍃 Power Detector</strong></h2>
-      
-      <a class="btn btn-outline-white btn-md" href="/get_started"><i class="fas fa-clone left"></i>Get Started</a>
+<!--Carousel Wrapper-->
+<div id="carousel-example-2" class="carousel slide carousel-fade" data-ride="carousel">
+  <!--Indicators-->
+  <ol class="carousel-indicators">
+    <li data-target="#carousel-example-2" data-slide-to="0" class="active"></li>
+    <li data-target="#carousel-example-2" data-slide-to="1"></li>
+    <li data-target="#carousel-example-2" data-slide-to="2"></li>
+  </ol>
+  <!--/.Indicators-->
+  <!--Slides-->
+  <div class="carousel-inner" role="listbox">
+    <div class="carousel-item active">
+      <div class="view">
+        <img class="d-block w-100" src="https://images.unsplash.com/photo-1565085360602-de694f1d7650?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=750&q=80"
+          alt="First slide" style="height: 600px;">
+        <div class="mask rgba-black-light"></div>
+      </div>
+      <div class="carousel-caption">
+        <h3 class="h3-responsive">Wind Power Predictor</h3>
+        <p>Predict Wind Energy Potential at your place</p>
+        <p><a href="/predict"><button class="btn  peach-gradient py-2 ">GET STARTED</button></p></a>
+      </div>
     </div>
+    <div class="carousel-item">
+      <!--Mask color-->
+      <div class="view">
+        <img class="d-block w-100" src="{{url_for('static', filename = 'windmill1.jpg')}}"
+          alt="Second slide" style="height: 600px;">
+        <div class="mask rgba-black-strong"></div>
+      </div>
+      <div class="carousel-caption">
+        <h3 class="h3-responsive">Compare places</h3>
+        <p>Compare Wind Energy Potential of several places</p>
+        <p><a href="/compare"><button class="btn  aqua-gradient py-2 ">COMPARE</button></p></a>
+      </div>
+    </div>
+    
   </div>
+  <!--/.Slides-->
+  <!--Controls-->
+  <a class="carousel-control-prev" href="#carousel-example-2" role="button" data-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="sr-only">Previous</span>
+  </a>
+  <a class="carousel-control-next" href="#carousel-example-2" role="button" data-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="sr-only">Next</span>
+  </a>
+  <!--/.Controls-->
 </div>
-
-<div class = "container">
-
-</div>
+<!--/.Carousel Wrapper-->
 {% endblock content %}

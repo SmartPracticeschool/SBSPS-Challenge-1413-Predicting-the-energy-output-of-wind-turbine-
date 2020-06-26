@@ -14,23 +14,22 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
     <!-- Material Design Bootstrap -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.18.0/css/mdb.min.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href = " {{ url_for('static', filename = 'main.css') }}">
-    <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename = 'camera-120-183025.png') }}"/>
-
+    {% block header %}
+    {% endblock %}
     <style>
       * {
-           font-size: 20px;
+           font-size: 16px;
            line-height: 2;
         }
     </style>
 
-    <title>Wind 🍃 Power Detector</title>
+    <title>Wind  Power Detector</title>
   </head>
   <body class="bg">
-    <nav class="navbar navbar-expand-lg navbar-dark  deep-purple darken-4">
+    <nav class="navbar navbar-expand-lg navbar-dark  primary-color">
 
         <!-- Navbar brand -->
-        <a class="navbar-brand" href="/">Wind 🍃 Power Detector</a>
+        <a class="navbar-brand" href="/">Wind  Power Detector</a>
 
         <!-- Collapse button -->
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#basicExampleNav"
@@ -44,17 +43,17 @@
             <!-- Links -->
             <ul class="navbar-nav mr-auto px-3">
                 <li class="nav-item active px-3">
-                    <a class="nav-link" href="#hdig">How Does It Work?
-                        <span class="sr-only">(current)</span>
-                    </a>
+                    
                 </li>
                 
 
             </ul>
 
-            <a href = "/get_started">
+            <a href = "/predict">
                 <button class="btn  peach-gradient py-2 ">Get Started</button>
             </a>
+            <a href="/compare"><button class="btn  aqua-gradient py-2 ">COMPARE</button></a>
+            <a href="https://github.com/SmartPracticeschool/SBSPS-Challenge-1413-Predicting-the-energy-output-of-wind-turbine-"><button class="btn purple-gradient py-2">SOURCE CODE</button></a>
             <!-- Links -->
 
 

@@ -5,8 +5,16 @@ import os
 import json
 from mlHelperFuncts import transform, inverse
 from mlPredictorWatson import predictPower as power_pred
+import json
+from weatherAPIWrapper import getPredictions
+import requests
+from timerfunctions import update_iamkey
+import threading
+from script import update
+import pickle
 app = Flask(__name__, static_url_path='')
 
+CITIES_IN_COUNTRY = {}
 db_name = 'mydb'
 client = None
 db = None
@@ -39,6 +47,9 @@ elif os.path.isfile('vcap-local.json'):
 # When running this app on the local machine, default the port to 8000
 port = int(os.getenv('PORT', 8000))
 
+threading.Timer(60*15, update_iamkey).start()
+
+
 @app.route('/')
 def root():
     return render_template('index.html')
@@ -57,17 +68,7 @@ def get_visitor():
         print('No database')
         return jsonify([])
 
-# /**
-#  * Endpoint to get a JSON array of all the visitors in the database
-#  * REST API example:
-#  * <code>
-#  * GET http://localhost:8000/api/visitors
-#  * </code>
-#  *
-#  * Response:
-#  * [ "Bob", "Jane" ]
-#  * @return An array of all the visitor names
-#  */
+
 @app.route('/api/visitors', methods=['POST'])
 def put_visitor():
     user = request.json['name']
@@ -83,13 +84,91 @@ def put_visitor():
 
 # @app.route('/get_started')
 # def get_started():
+
+@app.route('/predict')
+def predict():
+    return render_template('predict.html')
+    
+@app.route('/predict/all_countries')
+def all_countries():
+    countries = []
+    # file = json.load(open('names.json', 'r'))
+    # for country_name in file.values():
+    #     countries.append(country_name)
+    
+    f = open('countries.pkl', 'rb')
+    countries = pickle.load(f)
+
+    d = {"countries" : countries}
+
+    return jsonify(d)
+
+@app.route('/predict/cities/<country>')
+def cities(country):
+    all_cities = []
+    # for city in os.listdir("./country_data/" + country):
+    #     with open("./country_data/" + country + "/" + city) as f:
+    #         all_cities.append(json.load(f))
+    # cur = {"cities" : all_cities}
+
+    f = open('data', 'rb')
+    city_in_country = pickle.load(f)
+    # print(city_in_country[country])
+    for entry in city_in_country[country]:
+        all_cities.append(entry[0]) 
+
+    cur = {"cities" : all_cities}
+    return jsonify(cur)
+
+@app.route('/predict/submit', methods = ['POST'])
+def submit():
+    print(request.form)
+    city = request.form['city'] 
+    resp, initial_time = getPredictions(city)
+    
+    return jsonify({
+        'powers' : resp,
+        'time' : initial_time
+    })
     
 
+@app.route('/result/<city>')
+def result(city):
+    predictions = getPredictions(city)[0]
+    return jsonify(predictions)
+
+
+@app.route('/get_windspeeds', methods = ['POST'])
+def get_windspeeds():
+    city = request.form['city']
+    weather_api = "54e3f61b512d6ae30ebd81acd43d155c"
+    url = f"http://api.openweathermap.org/data/2.5/forecast?q={city}&appid={weather_api}"
+    resp = requests.post(url).json()
+    
+    windspeeds  = []
+    for entry in resp['list'] :
+        windspeeds.append(float(entry['wind']['speed']))
+    return jsonify({
+        'windspeeds' : windspeeds
+    })
+
+
+@app.route('/compare')
+def compare():
+    return render_template('compare.html')
 
 @app.route('/test/<ws>/<wd>')
 def test(ws, wd):
     return str(power_pred(int(ws), int(wd)))
-
+@app.route('/down')
+def down():
+    from google_drive_downloader import GoogleDriveDownloader as gdd
+    gdd.download_file_from_google_drive(file_id='1K2obxXAwzg63KlRAlBkuIxB79YCYq9lP',dest_path='./data')
+    f = open('data', 'rb')
+    city_in_country = pickle.load(f)
+    f.close()
+    return jsonify({"Success":10, "vsl" : city_in_country})
+    
 
 @atexit.register
 def shutdown():
@@ -97,4 +176,8 @@ def shutdown():
         client.disconnect()
 
 if __name__ == '__main__':
+    update_iamkey()
+    
+    threading.Timer(1200, update_iamkey).start()
     app.run(host='0.0.0.0', port=port, debug=True)
+    
