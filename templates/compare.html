@@ -1,26 +1,23 @@
 {% extends 'layout.html' %}
-
-
 {% block header %}
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script>
+    
     google.charts.load('current', { 'packages': ['corechart'] });
     google.charts.load('current', { 'packages': ['line'] });
     function fillCountries() {
+        //Fill the country dropdown lists
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function () {
-            // console.log(xmlHttp.responseText)
             var select1 = document.getElementById("select_countries1");
             const data = xmlHttp.responseText;
             const obj = JSON.parse(data);
-            // var arr = JSON.parse(xmlHttp.responseText);
             var arr = obj.countries;
             arr.sort();
-            // console.log(arr);
             for (i = 0; i < arr.length; i++) {
                 var opt = document.createElement('option');
-                opt.value = arr[i];
-                opt.innerHTML = arr[i];
+                opt.value = (arr[i]);
+                opt.innerHTML = (arr[i]);
                 select1.appendChild(opt);
             }
             var select2 = document.getElementById("select_countries2");
@@ -33,7 +30,6 @@
                 select2.appendChild(opt);
             }
         }
-        // var base = window.location.origin;
 
         var baseUrl = window.location.origin + '/predict'
         var countries_url = baseUrl + "/all_countries"
@@ -42,6 +38,7 @@
     }
 
     function countrySelected1() {
+        //This function adds cities of the selected countrues
         document.getElementById("select_cities1").innerHTML = "";
         var country = document.getElementById("select_countries1").value;
         document.getElementById("select_cities1").style.display = "block";
@@ -59,6 +56,7 @@
                 opt.innerHTML = arr[i];
                 select.appendChild(opt);
             }
+            document.getElementById("go").style.display = "block";
 
         }
         countries_url = window.location.origin + '/predict' + "/cities/" + country;
@@ -73,17 +71,16 @@
         document.getElementById("select_cities2").style.display = "block";
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function () {
-            // console.log(xmlHttp.responseText);
             var obj = JSON.parse(xmlHttp.responseText);
             var arr = obj.cities;
             var select = document.getElementById("select_cities2");
             for (i = 0; i < arr.length; i++) {
                 var opt = document.createElement('option');
-
                 opt.value = arr[i];
                 opt.innerHTML = arr[i];
                 select.appendChild(opt);
             }
+            document.getElementById("go").style.display = "block";
 
         }
         countries_url = window.location.origin + '/predict' + "/cities/" + country;
@@ -98,8 +95,7 @@
     function cityselected2() {
         document.getElementById("go").style.display = "block";
     }
-    var predictions_global = null;
-    var time_global = null;
+    var predictions_global = null; // Global variables for storing predictions of the city 
 
 
 
@@ -163,17 +159,9 @@
             ]);
         }
         var options = {
-            title: 'Expected Power Wind Power Output(KWh)',
-            // curveType: 'function',
+            title: 'Expected Power Wind Power Output(KW)',
             legend: { position: 'bottom' },
-            // hAxis: {
-            //     // format: 'M/d/yy',
-            //     gridlines: { count: 35 }
-            // },
-            // vAxis: {
-            //     gridlines: { color: 'none' },
-            //     minValue: 0
-            // }
+           
         };
 
         var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
@@ -182,95 +170,57 @@
         document.getElementById("go").innerHTML = 'Go';
     }
 
-
-
-
 </script>
 {% endblock header %}
-
 
 {% block content %}
 <div class="container">
 
-    <!-- Default form contact -->
+    
     <div class="row">
         <div class="col-md-6 my-3">
             <form class="text-center border border-light p-5" method="POST">
-
                 <p class=" h4 mb-4">Enter your place1</p>
-
-
                 <label>Enter Country</label>
                 <select class="browser-default custom-select mb-4" id="select_countries1" onchange="countrySelected1();"
                     name="country">
                     <option value="" disabled selected>Choose option</option>
-
                 </select>
-
                 <select class="browser-default custom-select mb-4" id="select_cities1" style="display: none;"
                     onchange="cityselected1();" name="city">
                     <option value="" disabled selected>Choose option</option>
-
                 </select>
-
-
-
-
             </form>
         </div>
         <div class="col-md-6 my-3">
             <form class="text-center border border-light p-5" method="POST">
-
                 <p class=" h4 mb-4">Enter your place2</p>
-
-
                 <label>Enter Country</label>
                 <select class="browser-default custom-select mb-4" id="select_countries2" onchange="countrySelected2();"
                     name="country">
                     <option value="" disabled selected>Choose option</option>
-
                 </select>
-
                 <select class="browser-default custom-select mb-4" id="select_cities2" style="display: none;"
                     onchange="cityselected2();" name="city">
                     <option value="" disabled selected>Choose option</option>
-
                 </select>
-
-
-
-
             </form>
             <script>fillCountries();</script>
         </div>
-
-
     </div>
 
     <div class="row">
-
-
         <button class="btn btn-secondary btn-block my-3 mx-3" style="display: none;" id="go"
             onclick="comparePower();">Go</button>
-
     </div>
-
     <div class="row">
         <div class="card" style="display: none; width: 100%;" id = "chart_card">
             <div class="card-body">
                 <div class="col-md-12" id="curve_chart" style="width: 100%-content; height: 50em;">
-
                 </div>
             </div>
         </div>
-
     </div>
-
-
-
 </div>
-
-
-
 
 {% endblock content %}

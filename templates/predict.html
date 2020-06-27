@@ -50,6 +50,7 @@
                 opt.innerHTML = arr[i];
                 select.appendChild(opt);
             }
+            document.getElementById("go").style.display = "block";
 
         }
         countries_url = window.location.origin + '/predict' + "/cities/" + country;
@@ -115,7 +116,7 @@
         
 
         var options = {
-            title: 'Expected Power Wind Power Output(KWh)',
+            title: 'Expected Power Wind Power Output(KW)',
             curveType: 'function',
             legend: { position: 'bottom' },
             hAxis: {
