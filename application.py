@@ -46,8 +46,6 @@ elif os.path.isfile('vcap-local.json'):
 # When running this app on the local machine, default the port to 8000
 port = int(os.getenv('PORT', 8000))
 
-#update the iamkey requred for IBM Watson API every 15min = 15 * 60
-# threading.Timer(60*15, update_iamkey).start()
 
 
 @app.route('/')
@@ -75,7 +73,7 @@ def all_countries():
 
 @app.route('/predict/cities/<country>')
 def cities(country):
-    update_iamkey()
+    
     #API for delivering a list of all cities in a country using GET
     all_cities = []
     #data is a pickled version of a dict of country name TO list of city names
@@ -91,6 +89,7 @@ def cities(country):
 @app.route('/predict/submit', methods = ['POST'])
 def submit():
     #API to return a predictions of expected powers 
+    update_iamkey()
     city = request.form['city'] 
     forbidden = ['ā', 'ē', 'ī', "ō", 'ū', 'ȳ', 'á', 'é', 'í' , 'ó', 'ú', 'ý', 'ï']
     allowed = ['a', 'e', 'i', 'o', 'u','y', 'a', 'e', 'i', 'o', 'u','y' , 'i' ]
