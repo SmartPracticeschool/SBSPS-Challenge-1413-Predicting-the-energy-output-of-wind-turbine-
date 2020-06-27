@@ -1,6 +1,6 @@
-# CorDetSrc
+# Wind Power Predictor Source Code
 source code for Wind Power Detector
-# CorDet
+# Wind Power Predictor
 An online tool for detection of wind power across different cities of the world
 
 Demo Website on IBM Cloud! : [http://windpowerpredict-silly-baboon-yk.mybluemix.net/](http://windpowerpredict-silly-baboon-yk.mybluemix.net/)
