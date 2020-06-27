@@ -8,7 +8,7 @@ from mlPredictorWatson import predictPower as power_pred
 import json
 from weatherAPIWrapper import getPredictions
 import requests
-from timerfunctions import update_iamkey
+from timerfunctions import update_iamkey 
 import threading
 import pickle
 app = Flask(__name__, static_url_path='')
@@ -65,6 +65,7 @@ def submit():
     #API to return a predictions of expected powers 
     update_iamkey()
     city = request.form['city'] 
+    #We need to replace UNICODE characters with their ASCII equivalents as UNICODEare not accepted by weather API
     forbidden = ['ā', 'ē', 'ī', "ō", 'ū', 'ȳ', 'á', 'é', 'í' , 'ó', 'ú', 'ý', 'ï']
     allowed = ['a', 'e', 'i', 'o', 'u','y', 'a', 'e', 'i', 'o', 'u','y' , 'i' ]
     for i in range(len(forbidden)):
@@ -94,6 +95,7 @@ def get_windspeeds():
     #API to return a json of expected windspeeds
 
     city = request.form['city']
+    #We need to replace UNICODE characters with their ASCII equivalents as UNICODEare not accepted by weather API
     forbidden = ['ā', 'ē', 'ī', "ō", 'ū', 'ȳ', 'á', 'é', 'í' , 'ó', 'ú', 'ý', 'ï']
     allowed = ['a', 'e', 'i', 'o', 'u','y', 'a', 'e', 'i', 'o', 'u','y' , 'i' ]
     for i in range(len(forbidden)):
