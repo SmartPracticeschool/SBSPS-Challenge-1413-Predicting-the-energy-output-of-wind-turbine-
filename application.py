@@ -137,10 +137,7 @@ def down():
     return jsonify({"Success":10, "vsl" : city_in_country})
     
 
-@atexit.register
-def shutdown():
-    if client:
-        client.disconnect()
+
 
 if __name__ == '__main__':
     
