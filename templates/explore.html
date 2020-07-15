@@ -1,0 +1,175 @@
+{% extends 'layout.html' %}
+{% block header %}
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script>
+  google.charts.load('current', { 'packages': ['corechart'] });
+  google.charts.load('current', { 'packages': ['line'] });
+  function get_rand() {
+
+    var xtp = new XMLHttpRequest();
+    xtp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        document.getElementById('country_area').style.display = "block";
+        var obj = JSON.parse(xtp.responseText);
+        var city = obj.city;
+        var lat = obj.lat;
+        var lon = obj.lon;
+        var temp = obj.temp - 273;
+        var pressure = obj.pressure;
+        var windspeed = obj.windspeed;
+        var winddir = obj.winddir;
+
+        document.getElementById('lat').innerHTML = "Latitude :" + lat;
+        document.getElementById('lon').innerHTML = "Longitude :" + lon;
+        document.getElementById('temp').innerHTML = "Temperature :" + temp + " C";
+        document.getElementById('pressure').innerHTML = "Pressure :" + pressure;
+        document.getElementById('windspeed').innerHTML = "Windspeed :" + windspeed;
+        document.getElementById('winddir').innerHTML = "Winddir :" + winddir;
+
+        document.getElementById('country_header').innerHTML = city;
+        drawGraph();
+      }
+
+    }
+    var countries_url = window.location.origin + "/windy_cities"
+    xtp.open("GET", countries_url, true); // true for asynchronous 
+    xtp.send(null);
+
+  }
+
+  function drawGraph() {
+
+    var xmlHttp = new XMLHttpRequest();
+    var city_name = document.getElementById('country_header').innerHTML;
+    var data = new FormData();
+    data.append('city', city_name);
+    xmlHttp.open('POST', window.location.origin + '/predict/submit', true);
+    xmlHttp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        var data = new google.visualization.DataTable();
+        data.addColumn('date', 'Time of Day');
+        data.addColumn('number', 'Expected Power');
+
+        var preds = JSON.parse(xmlHttp.responseText)
+        predictions_global = preds.powers;
+        time_global = preds.time;
+        var cur_time = new Date();
+        for (i = 0; i < predictions_global.length; i++) {
+          time_str = time_global.split(" ")[1];
+          base_time = parseInt(time_str.substring(0, 2));
+          pred_date = new Date(cur_time.getTime() + 180 * i * 60000);
+
+          data.addRow([
+            pred_date, Math.max(0, predictions_global[i])
+          ]);
+        }
+
+        var options = {
+          title: 'Expected Power Wind Power Output(KW)',
+          curveType: 'function',
+          legend: { position: 'bottom' },
+          hAxis: {
+            // format: 'M/d/yy',
+            gridlines: { count: 35 }
+          },
+          vAxis: {
+            gridlines: { color: 'none' },
+            minValue: 0
+          }
+        }
+      
+
+      var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+      chart.draw(data, google.charts.Line.convertOptions(options));
+      }
+
+    };
+    xmlHttp.send(data);
+  }
+
+
+
+</script>
+
+
+
+{% endblock header %}
+
+
+
+{% block content %}
+
+<!--Carousel Wrapper-->
+<div id="carousel-example-2" class="carousel slide carousel-fade" data-ride="carousel">
+  <!--Indicators-->
+
+  <!--/.Indicators-->
+  <!--Slides-->
+  <div class="carousel-inner" role="listbox">
+    <div class="carousel-item active">
+      <div class="view">
+        <img class="d-block w-100" src="https://mdbootstrap.com/img/Photos/Slides/img%20(68).jpg" alt="First slide">
+        <div class="mask rgba-black-light"></div>
+      </div>
+      <div class="carousel-caption">
+        <h2 class="h2-responsive">Explore regions of the world with high wind potential</h2>
+        <button type="button" class="btn btn-secondary" id="get_rand_button" onclick="get_rand();">Get A Random Windy
+          Area!</button>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="container" id="country_area" style="display: none;">
+  <div class="row">
+    <div class="container my-5 py-5 z-depth-1">
+
+
+      <!--Section: Content-->
+      <section class="px-md-5 mx-md-5 text-center text-lg-left dark-grey-text">
+
+        <!--Grid row-->
+        <div class="row">
+
+          <!--Grid column-->
+          <div class="col-md-12 mb-4 mb-md-0">
+
+            <h3 class="font-weight-bold" id="country_header">country_header</h3>
+
+            <p class="text-muted" id="desc">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item" id="temp">temp</li>
+              <li class="list-group-item" id="lon">lon</li>
+              <li class="list-group-item" id="lat">lat</li>
+              <li class="list-group-item" id="pressure">pressure</li>
+              <li class="list-group-item" id="windspeed">windspeed</li>
+              <li class="list-group-item" id="winddir">winddir</li>
+            </ul>
+            </p>
+
+
+          </div>
+          <!--Grid column-->
+
+          <!--Grid column-->
+
+
+        </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-11" id="curve_chart" style="width: max-content; height: 50em;">
+
+    </div>
+</div>
+  <!--Section: Content-->
+
+
+</div>
+
+
+
+{% endblock content %}

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.min.js"
+    integrity="sha256-vIL0pZJsOKSz76KKVCyLxzkOT00vXs+Qz4fYRVMoDhw=" crossorigin="anonymous">
+    </script>
+    <script>
+        function downloadPDF() {
+        const pdf = new jsPDF();
+        // var d1 = JSON.parse(sessionStorage.getItem('predictions_stored'));
+        var d = [51565616515, 65456454545];
+        k = d.map(String)
+        pdf.text(10, 10, k);
+        pdf.save();
+
+
+    }
+        downloadPDF();
+        </script>
+
+    
+</body>
+</html>

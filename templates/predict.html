@@ -1,0 +1,289 @@
+{% extends 'layout.html' %}
+
+
+{% block header %}
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.min.js"
+    integrity="sha256-vIL0pZJsOKSz76KKVCyLxzkOT00vXs+Qz4fYRVMoDhw=" crossorigin="anonymous">
+    </script>
+
+<script>
+    google.charts.load('current', { 'packages': ['corechart'] });
+    google.charts.load('current', { 'packages': ['line'] });
+    function fillCountries() {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function () {
+            // console.log(xmlHttp.responseText)
+            var select = document.getElementById("select_countries");
+            const data = xmlHttp.responseText;
+            const obj = JSON.parse(data);
+            // var arr = JSON.parse(xmlHttp.responseText);
+            var arr = obj.countries;
+            arr.sort();
+            // console.log(arr);
+            for (i = 0; i < arr.length; i++) {
+                var opt = document.createElement('option');
+                opt.value = arr[i];
+                opt.innerHTML = arr[i];
+                select.appendChild(opt);
+            }
+        }
+        // var base = window.location.origin;
+
+        var baseUrl = window.location.origin + '/predict'
+        var countries_url = baseUrl + "/all_countries"
+        xmlHttp.open("GET", countries_url, true); // true for asynchronous 
+        xmlHttp.send(null);
+    }
+
+    function countrySelected() {
+        document.getElementById("select_cities").innerHTML = "";
+        var country = document.getElementById("select_countries").value;
+        document.getElementById("select_cities").style.display = "block";
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function () {
+            // console.log(xmlHttp.responseText);
+            var obj = JSON.parse(xmlHttp.responseText);
+            var arr = obj.cities;
+            var select = document.getElementById("select_cities");
+            for (i = 0; i < arr.length; i++) {
+                var opt = document.createElement('option');
+
+                // var city = JSON.parse(arr[i])
+                opt.value = arr[i];
+                opt.innerHTML = arr[i];
+                select.appendChild(opt);
+            }
+            document.getElementById("go").style.display = "block";
+
+        }
+        countries_url = window.location.origin + '/predict' + "/cities/" + country;
+        xmlHttp.open("GET", countries_url, true); // true for asynchronous 
+        xmlHttp.send(null);
+
+    }
+
+    function cityselected() {
+        document.getElementById("go").style.display = "block";
+    }
+    var predictions_global = null;
+    var time_global = null;
+    function predictPower() {
+        document.getElementById('go').innerHTML = 'Loading Pls Wait....';
+        var data = new FormData();
+        var city_name = document.getElementById('select_cities').value;
+        var newchar = 'a';
+        city_name = city_name.split('ā').join(newchar);
+        data.append('city', city_name);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', window.location.origin + '/predict/submit', true);
+        // xhr.onload = function() {
+
+        // }
+        xhr.onreadystatechange = function () {
+            if (xhr.responseText.indexOf("[ERROR]") != -1) {
+                console.log(xhr.responseText);
+                alert("An error occured try again later");
+                document.getElementById('go').innerHTML = 'Go';
+                return;
+            }
+            var preds = JSON.parse(xhr.responseText)
+            sessionStorage.setItem('predictions_stored', JSON.stringify(preds.powers));
+            sessionStorage.setItem('initial_time_stored', JSON.stringify(preds.time));
+            predictions_global = preds.powers;
+            time_global = preds.time;
+
+            drawChart();
+            drawWindSpeed();
+            document.getElementById('go').innerHTML = 'Go';
+            document.getElementById('download').style.display = 'block';
+        };
+        xhr.send(data);
+    }
+
+
+
+    function drawChart() {
+        // var input_data = [['Time', 'Expected Power']];
+
+
+        var data = new google.visualization.DataTable();
+        data.addColumn('date', 'Time of Day');
+        data.addColumn('number', 'Expected Power');
+
+        var cur_time = new Date();
+        for (i = 0; i < predictions_global.length; i++) {
+            time_str = time_global.split(" ")[1];
+            base_time = parseInt(time_str.substring(0, 2));
+            pred_date = new Date(cur_time.getTime() + 180 * i * 60000);
+
+            data.addRow([
+                pred_date, Math.max(0, predictions_global[i])
+            ]);
+        }
+
+
+
+        var options = {
+            title: 'Expected Power Wind Power Output(KW)',
+            curveType: 'function',
+            legend: { position: 'bottom' },
+            hAxis: {
+                // format: 'M/d/yy',
+                gridlines: { count: 35 }
+            },
+            vAxis: {
+                gridlines: { color: 'none' },
+                minValue: 0
+            }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+        chart.draw(data, google.charts.Line.convertOptions(options));
+    }
+
+    function drawWindSpeed() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('date', 'Time of Day');
+        data.addColumn('number', 'Wind Speed');
+        var cur_time = new Date();
+        xmlHttp = new XMLHttpRequest();
+        xmlHttp.open('POST', window.location.origin + '/get_windspeeds', true);
+        var datasend = new FormData();
+        var city_name = document.getElementById('select_cities').value;
+        var newchar = 'a';
+        city_name = city_name.split('ā').join(newchar);
+        datasend.append('city', city_name);
+        xmlHttp.onreadystatechange = function () {
+            var speeds = JSON.parse(xmlHttp.responseText).windspeeds;
+            var tnow = new Date();
+            for (i = 0; i < speeds.length; i++) {
+                data.addRow([new Date(tnow.getTime() + 180 * i * 60000), speeds[i]]);
+            }
+
+            var options = {
+                title: 'Expected  Wind Speeds(m/s) ',
+                curveType: 'function',
+                legend: { position: 'bottom' },
+                hAxis: {
+                    // format: 'M/d/yy',
+                    gridlines: { count: 35 }
+                },
+                vAxis: {
+                    gridlines: { color: 'none' },
+                    minValue: 0
+                }
+            };
+
+            var chart = new google.visualization.LineChart(document.getElementById('curve_windspeed'));
+
+            chart.draw(data, google.charts.Line.convertOptions(options));
+
+        }
+        xmlHttp.send(datasend);
+    }
+    function tofixedlength(num) {
+        return '0'.repeat(Math.max(2 - num.toString().length, 0)) + num;
+    }
+    function addTimeHelper(inp_str, offset) {
+        // offset ->hrs
+        // inp_str ->string representation of the date
+        var year = parseInt(inp_str.substring(0, 4));
+        var mon = parseInt(inp_str.substring(5, 7));
+        var day = parseInt(inp_str.substring(8, 10));
+        var hour = parseInt(inp_str.substring(11, 13));
+        var virtual_hour = hour + offset;
+        hour = virtual_hour % 24;
+        day += Math.floor(virtual_hour / 24);
+        return tofixedlength(year.toString()) + "-" + tofixedlength(mon.toString()) + "-" + tofixedlength(day.toString()) + " " + tofixedlength(day.toString()) + "-" + tofixedlength(hour.toString()) + "-" + "00";
+
+    }
+    function downloadPDF() {
+        const pdf = new jsPDF();
+        var d = JSON.parse(sessionStorage.getItem('predictions_stored'));
+        var k = d.map(String);
+        var res = ["Wind Power Predictor", "Time\t\t\t\t Power Expected(KW)"];
+        var time_str = JSON.parse(sessionStorage.getItem('initial_time_stored'));
+        // var tnow = new Date();
+        for (i = 0; i < k.length; i++) {
+            // var tpred = new Date(tnow.getTime() + 180 * i * 60000);
+            res.push(addTimeHelper(time_str, i * 3) + "\t" + k[i]);
+        }
+        pdf.text(10, 10, res);
+        pdf.save();
+
+
+    }
+
+
+
+
+</script>
+{% endblock header %}
+
+
+{% block content %}
+<div class="container">
+
+    <!-- Default form contact -->
+    <div class="row">
+        <div class="col-md-12">
+            <form class="text-center border border-light p-5" method="POST">
+
+                <p class=" h4 mb-4">Enter your place</p>
+
+
+                <label>Enter Country</label>
+                <select class="browser-default custom-select mb-4" id="select_countries" onchange="countrySelected();"
+                    name="country">
+                    <option value="" disabled selected>Choose option</option>
+
+                </select>
+
+                <select class="browser-default custom-select mb-4" id="select_cities" style="display: none;"
+                    onchange="cityselected();" name="city">
+                    <option value="" disabled selected>Choose option</option>
+
+                </select>
+
+
+
+
+            </form>
+            <script>fillCountries();</script>
+        </div>
+
+
+    </div>
+
+    <div class="row">
+        <button class="btn btn-secondary btn-block my-3 mx-3" style="display: none;" id="go"
+            onclick="predictPower();">Go</button>
+    </div>
+    <div class="row">
+        <div class="col-md-12" id="curve_chart" style="width: max-content; height: 50em;">
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12" id="curve_windspeed" style="width: max-content; height: 50em;">
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <center>
+                <button type="button" class="btn btn-success" id="download" style="display: none;"
+                    onclick="downloadPDF();">Download as PDF</button>
+            </center>
+        </div>
+    </div>
+
+</div>
+
+
+
+
+{% endblock content %}

@@ -1,0 +1,231 @@
+{% extends 'layout.html' %}
+{% block header %}
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script>
+    
+    google.charts.load('current', { 'packages': ['corechart'] });
+    google.charts.load('current', { 'packages': ['line'] });
+    function fillCountries() {
+        //Fill the country dropdown lists
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function () {
+            var select1 = document.getElementById("select_countries1");
+            const data = xmlHttp.responseText;
+            const obj = JSON.parse(data);
+            var arr = obj.countries;
+            arr.sort();
+            for (i = 0; i < arr.length; i++) {
+                var opt = document.createElement('option');
+                opt.value = (arr[i]);
+                opt.innerHTML = (arr[i]);
+                select1.appendChild(opt);
+            }
+            var select2 = document.getElementById("select_countries2");
+
+
+            for (i = 0; i < arr.length; i++) {
+                var opt = document.createElement('option');
+                opt.value = arr[i];
+                opt.innerHTML = arr[i];
+                select2.appendChild(opt);
+            }
+        }
+
+        var baseUrl = window.location.origin + '/predict'
+        var countries_url = baseUrl + "/all_countries"
+        xmlHttp.open("GET", countries_url, true); // true for asynchronous 
+        xmlHttp.send(null);
+    }
+
+    function countrySelected1() {
+        //This function adds cities of the selected countrues
+        document.getElementById("select_cities1").innerHTML = "";
+        var country = document.getElementById("select_countries1").value;
+        document.getElementById("select_cities1").style.display = "block";
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function () {
+            // console.log(xmlHttp.responseText);
+            var obj = JSON.parse(xmlHttp.responseText);
+            var arr = obj.cities;
+            var select = document.getElementById("select_cities1");
+            for (i = 0; i < arr.length; i++) {
+                var opt = document.createElement('option');
+
+                // var city = JSON.parse(arr[i])
+                opt.value = arr[i];
+                opt.innerHTML = arr[i];
+                select.appendChild(opt);
+            }
+            document.getElementById("go").style.display = "block";
+
+        }
+        countries_url = window.location.origin + '/predict' + "/cities/" + country;
+        xmlHttp.open("GET", countries_url, true); // true for asynchronous 
+        xmlHttp.send(null);
+
+    }
+
+    function countrySelected2() {
+        document.getElementById("select_cities2").innerHTML = "";
+        var country = document.getElementById("select_countries2").value;
+        document.getElementById("select_cities2").style.display = "block";
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function () {
+            var obj = JSON.parse(xmlHttp.responseText);
+            var arr = obj.cities;
+            var select = document.getElementById("select_cities2");
+            for (i = 0; i < arr.length; i++) {
+                var opt = document.createElement('option');
+                opt.value = arr[i];
+                opt.innerHTML = arr[i];
+                select.appendChild(opt);
+            }
+            document.getElementById("go").style.display = "block";
+
+        }
+        countries_url = window.location.origin + '/predict' + "/cities/" + country;
+        xmlHttp.open("GET", countries_url, true); // true for asynchronous 
+        xmlHttp.send(null);
+
+    }
+
+    function cityselected1() {
+        document.getElementById("go").style.display = "block";
+    }
+    function cityselected2() {
+        document.getElementById("go").style.display = "block";
+    }
+    var predictions_global = null; // Global variables for storing predictions of the city 
+
+
+
+    function comparePower() {
+
+        document.getElementById('go').innerHTML = 'Loading Pls Wait....';
+        sessionStorage.clear();
+
+
+        var city1 = document.getElementById("select_cities1").value;
+        var city2 = document.getElementById("select_cities2").value;
+        var xmlHttp1 = new XMLHttpRequest();
+        var xmlHttp2 = new XMLHttpRequest();
+        xmlHttp1.open('POST', window.location.origin + '/predict/submit', true);
+        xmlHttp2.open('POST', window.location.origin + '/predict/submit', true);
+        xmlHttp1.onreadystatechange = function () {
+            if (xmlHttp1.responseText.indexOf("[ERROR]") != -1) {
+                alert("An error occured try again later");
+                document.getElementById('go').innerHTML = 'Go';
+                return ;
+            }
+            var preds = JSON.parse(xmlHttp1.responseText).powers;
+
+            sessionStorage.setItem('city1_resp', JSON.stringify(preds));
+            if (('city1_resp' in sessionStorage) && ('city2_resp' in sessionStorage))
+                drawcharts();
+        };
+        var data1 = new FormData();
+        data1.append('city', city1);
+        xmlHttp1.send(data1);
+
+        var data2 = new FormData();
+        data2.append('city', city2);
+
+
+        xmlHttp2.onreadystatechange = function () {
+            var preds = JSON.parse(xmlHttp2.responseText).powers;
+
+            sessionStorage.setItem('city2_resp', JSON.stringify(preds));
+            if (('city1_resp' in sessionStorage) && ('city2_resp' in sessionStorage))
+                drawcharts();
+        };
+
+        xmlHttp2.send(data2);
+
+
+    }
+
+    function drawcharts() {
+        document.getElementById('chart_card').style.display = "block";
+        var d1 = JSON.parse(sessionStorage.getItem('city1_resp'));
+        var d2 = JSON.parse(sessionStorage.getItem('city2_resp'));
+        if (d1 == null || d2 == null) {
+            alert("error!!");
+        }
+
+        var data = new google.visualization.DataTable();
+        data.addColumn('date', 'Time of Day');
+        data.addColumn('number', 'Expected Power in city1');
+        data.addColumn('number', 'Expected Power in city2');
+        var curtime = new Date();
+        for (i = 0; i < d1.length; i++) {
+            pred_date = new Date(curtime.getTime() + 180 * i * 60000);
+            data.addRow([
+                pred_date, Math.max(0, d1[i]), Math.max(0, d2[i])
+            ]);
+        }
+        var options = {
+            title: 'Expected Power Wind Power Output(KW)',
+            legend: { position: 'bottom' },
+           
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+        chart.draw(data, google.charts.Line.convertOptions(options));
+        document.getElementById("go").innerHTML = 'Go';
+    }
+
+</script>
+{% endblock header %}
+
+{% block content %}
+<div class="container">
+
+    
+    <div class="row">
+        <div class="col-md-6 my-3">
+            <form class="text-center border border-light p-5" method="POST">
+                <p class=" h4 mb-4">Enter your place1</p>
+                <label>Enter Country</label>
+                <select class="browser-default custom-select mb-4" id="select_countries1" onchange="countrySelected1();"
+                    name="country">
+                    <option value="" disabled selected>Choose option</option>
+                </select>
+                <select class="browser-default custom-select mb-4" id="select_cities1" style="display: none;"
+                    onchange="cityselected1();" name="city">
+                    <option value="" disabled selected>Choose option</option>
+                </select>
+            </form>
+        </div>
+        <div class="col-md-6 my-3">
+            <form class="text-center border border-light p-5" method="POST">
+                <p class=" h4 mb-4">Enter your place2</p>
+                <label>Enter Country</label>
+                <select class="browser-default custom-select mb-4" id="select_countries2" onchange="countrySelected2();"
+                    name="country">
+                    <option value="" disabled selected>Choose option</option>
+                </select>
+                <select class="browser-default custom-select mb-4" id="select_cities2" style="display: none;"
+                    onchange="cityselected2();" name="city">
+                    <option value="" disabled selected>Choose option</option>
+                </select>
+            </form>
+            <script>fillCountries();</script>
+        </div>
+    </div>
+
+    <div class="row">
+        <button class="btn btn-secondary btn-block my-3 mx-3" style="display: none;" id="go"
+            onclick="comparePower();">Go</button>
+    </div>
+    <div class="row">
+        <div class="card" style="display: none; width: 100%;" id = "chart_card">
+            <div class="card-body">
+                <div class="col-md-12" id="curve_chart" style="width: 100%-content; height: 50em;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
