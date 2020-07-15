@@ -8,7 +8,7 @@ def update_iamkey():
     }
 
     data = {
-    'apikey': 'dwbBWzM45uTSa9IyuVnsF0ppPL2Lunwc5qODOhfc_K-h',
+    'apikey': 'EKQoPPfoAQ6c1Y5U0qSiPFBH4wriVGe_2fmNbZ-nwnQ8',
     'grant_type': 'urn:ibm:params:oauth:grant-type:apikey'
     }
 
