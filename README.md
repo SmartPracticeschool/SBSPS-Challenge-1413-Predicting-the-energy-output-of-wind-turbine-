@@ -18,3 +18,5 @@ Demo Website on IBM Cloud! : [http://windpowerpredict-silly-baboon-yk.mybluemix.
 1. `cd` to this directory' 
 1.  Run `pip install -r requirements.txt` from the terminal. This will install the required python packages
 1.  Run `python application.py`. This will run a localhost server on your machine. Copy the url of the localhost and run it form you favourite web browser!
+
+presentation.avi is the video demonstration 
